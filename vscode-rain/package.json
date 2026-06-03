@@ -1,0 +1,28 @@
+{
+  "name": "rain-lang",
+  "displayName": "Rain",
+  "description": "Syntax highlighting for the Rain programming language (.rain)",
+  "version": "0.1.0",
+  "publisher": "rain",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rain",
+        "aliases": ["Rain", "rain"],
+        "extensions": [".rain"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rain",
+        "scopeName": "source.rain",
+        "path": "./syntaxes/rain.tmLanguage.json"
+      }
+    ]
+  }
+}

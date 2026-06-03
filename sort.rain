@@ -1,0 +1,539 @@
+// ============================================================
+//  SORT VISUALIZER  —  Rain language
+//  Bubble · Selection · Insertion · Shell · Cocktail Shaker
+//  Live animated bars + final performance ranking
+// ============================================================
+
+
+// ------------------------------------------------------------
+//  ARRAY  —  fixed-size 12-slot container (Rain has no arrays)
+// ------------------------------------------------------------
+
+class Arr {
+  init() {
+    this.v0  = 0; this.v1  = 0; this.v2  = 0; this.v3  = 0;
+    this.v4  = 0; this.v5  = 0; this.v6  = 0; this.v7  = 0;
+    this.v8  = 0; this.v9  = 0; this.v10 = 0; this.v11 = 0;
+    this.size = 12;
+  }
+
+  get(i) {
+    if (i == 0)  { return this.v0;  }
+    if (i == 1)  { return this.v1;  }
+    if (i == 2)  { return this.v2;  }
+    if (i == 3)  { return this.v3;  }
+    if (i == 4)  { return this.v4;  }
+    if (i == 5)  { return this.v5;  }
+    if (i == 6)  { return this.v6;  }
+    if (i == 7)  { return this.v7;  }
+    if (i == 8)  { return this.v8;  }
+    if (i == 9)  { return this.v9;  }
+    if (i == 10) { return this.v10; }
+    if (i == 11) { return this.v11; }
+    return 0;
+  }
+
+  set(i, val) {
+    if (i == 0)  { this.v0  = val; }
+    if (i == 1)  { this.v1  = val; }
+    if (i == 2)  { this.v2  = val; }
+    if (i == 3)  { this.v3  = val; }
+    if (i == 4)  { this.v4  = val; }
+    if (i == 5)  { this.v5  = val; }
+    if (i == 6)  { this.v6  = val; }
+    if (i == 7)  { this.v7  = val; }
+    if (i == 8)  { this.v8  = val; }
+    if (i == 9)  { this.v9  = val; }
+    if (i == 10) { this.v10 = val; }
+    if (i == 11) { this.v11 = val; }
+  }
+
+  swap(i, j) {
+    var tmp = this.get(i);
+    this.set(i, this.get(j));
+    this.set(j, tmp);
+  }
+
+  // Fill with a fixed shuffled sequence (same for every sort = fair race)
+  seed() {
+    this.v0  = 9;  this.v1  = 3;  this.v2  = 7;  this.v3  = 1;
+    this.v4  = 11; this.v5  = 5;  this.v6  = 2;  this.v7  = 10;
+    this.v8  = 4;  this.v9  = 8;  this.v10 = 6;  this.v11 = 12;
+  }
+
+  // Print as a bar chart, highlight positions hi1 and hi2 with >
+  render(hi1, hi2, label) {
+    var BAR_CHAR = "#";
+    var i = 0;
+    while (i < this.size) {
+      var v    = this.get(i);
+      var bar  = "";
+      var b    = 0;
+      while (b < v) {
+        bar = bar + BAR_CHAR;
+        b = b + 1;
+      }
+      // pad to width 12
+      var pad = v;
+      while (pad < 12) {
+        bar = bar + " ";
+        pad = pad + 1;
+      }
+      var marker = "  ";
+      if (i == hi1 or i == hi2) { marker = " *"; }
+      printin "  |" + bar + "|" + marker;
+      // print value right-aligned (2 digits)
+      if (v < 10) { printin " "; }
+      print v;
+      i = i + 1;
+    }
+    print "   " + label;
+    print "";
+  }
+}
+
+
+// ------------------------------------------------------------
+//  STATS  —  track comparisons and swaps per sort
+// ------------------------------------------------------------
+
+class Stats {
+  init(name) {
+    this.name  = name;
+    this.comps = 0;
+    this.swaps = 0;
+    this.time  = 0;   // will store clock delta * 1000
+  }
+
+  cmp() { this.comps = this.comps + 1; }
+  swap() { this.swaps = this.swaps + 1; }
+
+  report() {
+    print "  " + this.name;
+    print "    Comparisons : " + this.comps;
+    print "    Swaps       : " + this.swaps;
+  }
+}
+
+
+// ------------------------------------------------------------
+//  DISPLAY HELPERS
+// ------------------------------------------------------------
+
+fun sep() {
+  print "--------------------------------------------";
+}
+
+fun header(title) {
+  print "";
+  print "============================================";
+  print "  " + title;
+  print "============================================";
+}
+
+fun pause() {
+  delay(120);
+}
+
+fun pauseLong() {
+  delay(300);
+}
+
+
+// ------------------------------------------------------------
+//  1. BUBBLE SORT
+// ------------------------------------------------------------
+
+fun bubbleSort(arr, stats) {
+  header("BUBBLE SORT");
+  var n = arr.size;
+  var i = 0;
+  while (i < n - 1) {
+    var j = 0;
+    while (j < n - 1 - i) {
+      stats.cmp();
+      if (arr.get(j) > arr.get(j + 1)) {
+        arr.swap(j, j + 1);
+        stats.swap();
+        arr.render(j, j + 1, "swap " + j + " <-> " + (j + 1));
+        pause();
+      }
+      j = j + 1;
+    }
+    i = i + 1;
+  }
+  arr.render(-1, -1, "DONE");
+  pauseLong();
+}
+
+
+// ------------------------------------------------------------
+//  2. SELECTION SORT
+// ------------------------------------------------------------
+
+fun selectionSort(arr, stats) {
+  header("SELECTION SORT");
+  var n = arr.size;
+  var i = 0;
+  while (i < n - 1) {
+    var minIdx = i;
+    var j = i + 1;
+    while (j < n) {
+      stats.cmp();
+      if (arr.get(j) < arr.get(minIdx)) {
+        minIdx = j;
+      }
+      j = j + 1;
+    }
+    if (minIdx != i) {
+      arr.swap(i, minIdx);
+      stats.swap();
+      arr.render(i, minIdx, "placed min=" + arr.get(i) + " at pos " + i);
+      pause();
+    }
+    i = i + 1;
+  }
+  arr.render(-1, -1, "DONE");
+  pauseLong();
+}
+
+
+// ------------------------------------------------------------
+//  3. INSERTION SORT
+// ------------------------------------------------------------
+
+fun insertionSort(arr, stats) {
+  header("INSERTION SORT");
+  var n = arr.size;
+  var i = 1;
+  while (i < n) {
+    var key = arr.get(i);
+    var j   = i - 1;
+    var moved = false;
+    while (j >= 0) {
+      stats.cmp();
+      if (arr.get(j) > key) {
+        arr.set(j + 1, arr.get(j));
+        stats.swap();
+        arr.render(j, j + 1, "shifting " + arr.get(j + 1));
+        pause();
+        j = j - 1;
+        moved = true;
+      } else {
+        j = -1;   // break — Rain has no break, force exit
+      }
+    }
+    arr.set(j + 1, key);
+    if (moved) {
+      arr.render(j + 1, i, "inserted " + key + " at " + (j + 1));
+      pause();
+    }
+    i = i + 1;
+  }
+  arr.render(-1, -1, "DONE");
+  pauseLong();
+}
+
+
+// ------------------------------------------------------------
+//  4. SHELL SORT  (gap sequence: 6, 3, 1)
+// ------------------------------------------------------------
+
+fun shellSort(arr, stats) {
+  header("SHELL SORT");
+  var n = arr.size;
+
+  // Three passes: gap 6, gap 3, gap 1
+  var pass = 0;
+  while (pass < 3) {
+    var gap = 6;
+    if (pass == 1) { gap = 3; }
+    if (pass == 2) { gap = 1; }
+
+    print "  -- gap = " + gap + " --";
+    var i = gap;
+    while (i < n) {
+      var temp = arr.get(i);
+      var j    = i;
+      var moved = false;
+      while (j >= gap) {
+        stats.cmp();
+        if (arr.get(j - gap) > temp) {
+          arr.set(j, arr.get(j - gap));
+          stats.swap();
+          j = j - gap;
+          moved = true;
+        } else {
+          j = -1;   // force exit
+        }
+      }
+      if (j >= 0) { arr.set(j, temp); }
+      if (moved) {
+        arr.render(i, j, "gap=" + gap + " placed " + temp);
+        pause();
+      }
+      i = i + 1;
+    }
+    pass = pass + 1;
+  }
+  arr.render(-1, -1, "DONE");
+  pauseLong();
+}
+
+
+// ------------------------------------------------------------
+//  5. COCKTAIL SHAKER SORT  (bidirectional bubble)
+// ------------------------------------------------------------
+
+fun cocktailSort(arr, stats) {
+  header("COCKTAIL SHAKER SORT");
+  var n     = arr.size;
+  var lo    = 0;
+  var hi    = n - 1;
+  var swapped = true;
+
+  while (swapped) {
+    swapped = false;
+
+    // Left to right pass
+    var i = lo;
+    while (i < hi) {
+      stats.cmp();
+      if (arr.get(i) > arr.get(i + 1)) {
+        arr.swap(i, i + 1);
+        stats.swap();
+        swapped = true;
+        arr.render(i, i + 1, ">> fwd swap " + i + "<->" + (i+1));
+        pause();
+      }
+      i = i + 1;
+    }
+    hi = hi - 1;
+
+    // Right to left pass
+    var j = hi;
+    while (j > lo) {
+      stats.cmp();
+      if (arr.get(j) < arr.get(j - 1)) {
+        arr.swap(j, j - 1);
+        stats.swap();
+        swapped = true;
+        arr.render(j, j - 1, "<< bck swap " + j + "<->" + (j-1));
+        pause();
+      }
+      j = j - 1;
+    }
+    lo = lo + 1;
+  }
+  arr.render(-1, -1, "DONE");
+  pauseLong();
+}
+
+
+// ------------------------------------------------------------
+//  RANKING ENGINE  —  score by comps + swaps, lower = better
+// ------------------------------------------------------------
+
+class RankEntry {
+  init(name, comps, swaps) {
+    this.name  = name;
+    this.comps = comps;
+    this.swaps = swaps;
+    this.score = comps + swaps * 2;  // swaps cost more (memory writes)
+  }
+}
+
+fun rankAll(s1, s2, s3, s4, s5) {
+  header("FINAL RANKING");
+  print "  (score = comparisons + swaps*2, lower is better)";
+  print "";
+
+  var e1 = RankEntry(s1.name, s1.comps, s1.swaps);
+  var e2 = RankEntry(s2.name, s2.comps, s2.swaps);
+  var e3 = RankEntry(s3.name, s3.comps, s3.swaps);
+  var e4 = RankEntry(s4.name, s4.comps, s4.swaps);
+  var e5 = RankEntry(s5.name, s5.comps, s5.swaps);
+
+  // Collect into a 5-slot mini-array of scores for sorting
+  var ra = Arr();
+  ra.size = 5;
+  ra.set(0, e1.score);
+  ra.set(1, e2.score);
+  ra.set(2, e3.score);
+  ra.set(3, e3.score);  // placeholder — fixed below
+  ra.set(4, e5.score);
+  ra.set(3, e4.score);
+
+  // Store names parallel (re-use fields creatively)
+  // We'll just do a manual insertion sort on 5 items
+  // Pack them into an array of RankEntry by score
+
+  // Simple: find 1st, 2nd, 3rd, 4th, 5th by scanning
+  var entries = Arr();
+  entries.size = 5;
+  // encode: score * 100 + index so we can recover name
+  entries.set(0, e1.score * 10 + 0);
+  entries.set(1, e2.score * 10 + 1);
+  entries.set(2, e3.score * 10 + 2);
+  entries.set(3, e4.score * 10 + 3);
+  entries.set(4, e5.score * 10 + 4);
+
+  // Bubble sort the 5 entries
+  var p = 0;
+  while (p < 4) {
+    var q = 0;
+    while (q < 4 - p) {
+      if (entries.get(q) > entries.get(q + 1)) {
+        entries.swap(q, q + 1);
+      }
+      q = q + 1;
+    }
+    p = p + 1;
+  }
+
+  // medals
+  var medals = Arr();
+  medals.size = 5;
+  medals.set(0, 1); medals.set(1, 2); medals.set(2, 3);
+  medals.set(3, 4); medals.set(4, 5);
+
+  fun nameOf(idx) {
+    if (idx == 0) { return e1.name; }
+    if (idx == 1) { return e2.name; }
+    if (idx == 2) { return e3.name; }
+    if (idx == 3) { return e4.name; }
+    return e5.name;
+  }
+
+  fun scoreOf(idx) {
+    if (idx == 0) { return e1.score; }
+    if (idx == 1) { return e2.score; }
+    if (idx == 2) { return e3.score; }
+    if (idx == 3) { return e4.score; }
+    return e5.score;
+  }
+
+  fun compsOf(idx) {
+    if (idx == 0) { return e1.comps; }
+    if (idx == 1) { return e2.comps; }
+    if (idx == 2) { return e3.comps; }
+    if (idx == 3) { return e4.comps; }
+    return e5.comps;
+  }
+
+  fun swapsOf(idx) {
+    if (idx == 0) { return e1.swaps; }
+    if (idx == 1) { return e2.swaps; }
+    if (idx == 2) { return e3.swaps; }
+    if (idx == 3) { return e4.swaps; }
+    return e5.swaps;
+  }
+
+  var rank = 1;
+  var r = 0;
+  while (r < 5) {
+    var packed = entries.get(r);
+    var idx    = packed % 10;
+    var sc     = scoreOf(idx);
+
+    var medal = "  " + rank + ".";
+    if (rank == 1) { medal = "  GOLD   1."; }
+    if (rank == 2) { medal = "  SILVER 2."; }
+    if (rank == 3) { medal = "  BRONZE 3."; }
+
+    print medal + " " + nameOf(idx);
+    print "       score=" + sc + "  comps=" + compsOf(idx) + "  swaps=" + swapsOf(idx);
+
+    // Visual score bar
+    var barLen = floor(sc / 3);
+    var barStr = "";
+    var b = 0;
+    while (b < barLen) {
+      barStr = barStr + "|";
+      b = b + 1;
+    }
+    print "       " + barStr;
+    print "";
+
+    rank = rank + 1;
+    r = r + 1;
+  }
+
+  print "============================================";
+  print "  Lower score = faster / fewer operations";
+  print "============================================";
+}
+
+
+// ------------------------------------------------------------
+//  INTRO
+// ------------------------------------------------------------
+
+print "============================================";
+print "   SORT VISUALIZER  —  written in Rain";
+print "   5 algorithms  |  same 12-element array";
+print "   bars = value  |  * = active positions";
+print "============================================";
+print "";
+print "  Dataset: [ 9 3 7 1 11 5 2 10 4 8 6 12 ]";
+print "";
+delay(600);
+
+
+// ------------------------------------------------------------
+//  RUN ALL SORTS  (each on a fresh seeded array)
+// ------------------------------------------------------------
+
+var a1 = Arr();  a1.seed();
+var s1 = Stats("Bubble Sort");
+var t1 = clock();
+bubbleSort(a1, s1);
+s1.time = floor((clock() - t1) * 1000);
+
+var a2 = Arr();  a2.seed();
+var s2 = Stats("Selection Sort");
+var t2 = clock();
+selectionSort(a2, s2);
+s2.time = floor((clock() - t2) * 1000);
+
+var a3 = Arr();  a3.seed();
+var s3 = Stats("Insertion Sort");
+var t3 = clock();
+insertionSort(a3, s3);
+s3.time = floor((clock() - t3) * 1000);
+
+var a4 = Arr();  a4.seed();
+var s4 = Stats("Shell Sort");
+var t4 = clock();
+shellSort(a4, s4);
+s4.time = floor((clock() - t4) * 1000);
+
+var a5 = Arr();  a5.seed();
+var s5 = Stats("Cocktail Shaker");
+var t5 = clock();
+cocktailSort(a5, s5);
+s5.time = floor((clock() - t5) * 1000);
+
+
+// ------------------------------------------------------------
+//  STATS SUMMARY
+// ------------------------------------------------------------
+
+header("STATS SUMMARY");
+s1.report();
+print "";
+s2.report();
+print "";
+s3.report();
+print "";
+s4.report();
+print "";
+s5.report();
+print "";
+
+
+// ------------------------------------------------------------
+//  FINAL RANKING
+// ------------------------------------------------------------
+
+rankAll(s1, s2, s3, s4, s5);
